@@ -29,9 +29,9 @@ CAT_INICIAL_POSITION = 380, 380
 
 # Musica
 
-music.play('backsong')
-
 # Classes
+
+TILE_SIZE_MOVE = TILE_SIZE/10
 
 class Cat:
     def __init__(self, x , y):
@@ -40,7 +40,13 @@ class Cat:
         self.frame_timer = 0.0
         self.animation_speed = 0.2
         self.is_moving = False
-        self.actor = Actor(FRAME_CAT0, (self.x, self.y))
+        self.actor = Actor(FRAME_CAT0)
+        self.actor.x = self.x
+        self.actor.y = self.y
+
+    def move(self, dx, dy):
+        self.actor.x += dx * TILE_SIZE_MOVE
+        self.actor.y += dy * TILE_SIZE_MOVE
 
     def getPosition(self):
         x1, y1 = self.actor.pos
@@ -48,29 +54,29 @@ class Cat:
         return position
     
     def setPosition(self, set_x, set_y):
-        self.x = set_x
-        self.y = set_y
-        self.actor.pos = (self.x, self.y)
-        
+        self.actor.x = set_x
+        self.actor.y = set_y
+
     def moveUP(self):
-        current_position = self.getPosition()
-        current_position[1] = current_position[1] - TILE_SIZE
-        self.setPosition(current_position[0], current_position[1])
+        self.actor.x = self.actor.x
+        self.actor.y -= TILE_SIZE_MOVE
         
     def moveDOWN(self):
-        current_position = self.getPosition()
-        current_position[1] = current_position[1] + TILE_SIZE
-        self.setPosition(current_position[0], current_position[1])
+        self.actor.x = self.actor.x
+        self.actor.y += TILE_SIZE_MOVE
     
     def moveRIGHT(self):
-        current_position = self.getPosition()
-        current_position[0] = current_position[0] + TILE_SIZE
-        self.setPosition(current_position[0], current_position[1])
+        self.actor.y = self.actor.y
+        self.actor.x += TILE_SIZE_MOVE
 
     def moveLEFT(self):
-        current_position = self.getPosition()
-        current_position[0] = current_position[0] - TILE_SIZE
-        self.setPosition(current_position[0], current_position[1])
+        self.actor.y = self.actor.y
+        self.actor.x -= TILE_SIZE_MOVE
+
+    def update(self, dt):
+        self.animate(dt)
+        if not self.is_moving:
+            self.actor.image = FRAME_CAT0
     
     def animate(self, dt):
         if not self.is_moving:
@@ -83,12 +89,12 @@ class Cat:
             else:
                 self.actor.image = FRAME_CAT1
             self.frame_timer = 0.0
-
+        
     def update(self, dt):
         self.animate(dt)
         if not self.is_moving:
             self.actor.image = FRAME_CAT0
-     
+    
     def draw(self):
         self.actor.draw()
 
@@ -112,12 +118,11 @@ def on_mouse_down(pos, button):
         print("You missed me")
     """
 
-hero = Cat(380, 380)
+hero = Cat(380,380)
 var0cg = hero
 
 def init_game():
     global hero, score, fase, STATE
-    hero = Cat(380, 380)
     score = 0
     STATE = 'PLAYING'
    
@@ -151,19 +156,22 @@ def draw():
 def update(dt):
     hero.update(dt)
 
-def on_key_down(key):
-    """Gerencia eventos de teclado."""
-    if key.name == 'w' or key.name == 'up':
+    if keyboard.up or keyboard.w:
         hero.moveUP()
-    elif key.name == 's' or key.name == 'down':
+        hero.is_moving = True
+        hero.update(dt)
+    if keyboard.down or keyboard.s:
         hero.moveDOWN()
-    elif key.name == 'a' or key.name == 'left':
-        hero.moveLEFT()
-    elif key.name == 'd' or key.name == 'right':
+        hero.is_moving = True
+        hero.update(dt)
+    if keyboard.right or keyboard.d:
         hero.moveRIGHT()
-    
-    hero.is_moving = True
-
-def on_key_up(key):
-    """Quando o jogador solta a tecla, o gato para de se mover."""
-    hero.is_moving = False
+        hero.is_moving = True
+        hero.update(dt)
+    if keyboard.left or keyboard.a:
+        hero.moveLEFT()
+        hero.is_moving = True
+        hero.update(dt)
+    else:
+        hero.is_moving = False
+        hero.update(dt)
