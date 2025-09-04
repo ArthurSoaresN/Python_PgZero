@@ -27,6 +27,10 @@ FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
 CAT_INICIAL_POSITION = 380, 380
 
+# Musica
+
+music.play('backsong')
+
 # Classes
 
 class Cat:
