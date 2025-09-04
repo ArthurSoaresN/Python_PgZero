@@ -33,53 +33,59 @@ class Cat:
     def __init__(self, x , y):
         self.x = x
         self.y = y
-        self.current_frame = 0
         self.frame_timer = 0.0
         self.animation_speed = 0.2
         self.is_moving = False
         self.actor = Actor(FRAME_CAT0, (self.x, self.y))
 
-    def moveUP(self):
-        self.actor.y -= TILE_SIZE
-        self.is_moving = True
-        songs.play('move')
+    def getPosition(self):
+        x1, y1 = self.actor.pos
+        position = [x1, y1]
+        return position
     
+    def setPosition(self, set_x, set_y):
+        self.x = set_x
+        self.y = set_y
+        self.actor.pos = (self.x, self.y)
+        
+    def moveUP(self):
+        current_position = self.getPosition()
+        current_position[1] = current_position[1] - TILE_SIZE
+        self.setPosition(current_position[0], current_position[1])
+        
     def moveDOWN(self):
-        self.actor.y += TILE_SIZE
-        self.is_moving = True
+        current_position = self.getPosition()
+        current_position[1] = current_position[1] + TILE_SIZE
+        self.setPosition(current_position[0], current_position[1])
     
     def moveRIGHT(self):
-        self.actor.x += TILE_SIZE
-        self.is_moving = True
-    
+        current_position = self.getPosition()
+        current_position[0] = current_position[0] + TILE_SIZE
+        self.setPosition(current_position[0], current_position[1])
+
     def moveLEFT(self):
-        self.actor.x -= TILE_SIZE
-        self.is_moving = True
-    
-    def update(self, dt):
-        """Atualiza a lógica e a animação do gato."""
-        self.animate(dt)
-        if not self.is_moving:
-            self.actor.image = FRAME_CAT0
+        current_position = self.getPosition()
+        current_position[0] = current_position[0] - TILE_SIZE
+        self.setPosition(current_position[0], current_position[1])
     
     def animate(self, dt):
-        """Gerencia a animação de sprite de caminhar."""
         if not self.is_moving:
             return
-
         self.frame_timer += dt
         
         if self.frame_timer >= self.animation_speed:
-            # Alterna entre os dois sprites de caminhar
             if self.actor.image == FRAME_CAT1:
                 self.actor.image = FRAME_CAT2
             else:
                 self.actor.image = FRAME_CAT1
-            
             self.frame_timer = 0.0
-        
+
+    def update(self, dt):
+        self.animate(dt)
+        if not self.is_moving:
+            self.actor.image = FRAME_CAT0
+     
     def draw(self):
-        """Desenha o gato na tela."""
         self.actor.draw()
 
 
@@ -110,7 +116,7 @@ def init_game():
     hero = Cat(380, 380)
     score = 0
     STATE = 'PLAYING'
-    music.play('backsong')
+   
 
 def draw():
 
@@ -143,13 +149,13 @@ def update(dt):
 
 def on_key_down(key):
     """Gerencia eventos de teclado."""
-    if key == keyboard.W or key == keyboard.UP:
+    if key.name == 'w' or key.name == 'up':
         hero.moveUP()
-    elif key == keyboard.S or key == keyboard.DOWN:
+    elif key.name == 's' or key.name == 'down':
         hero.moveDOWN()
-    elif key == keyboard.A or key == keyboard.LEFT:
+    elif key.name == 'a' or key.name == 'left':
         hero.moveLEFT()
-    elif key == keyboard.D or key == keyboard.RIGHT:
+    elif key.name == 'd' or key.name == 'right':
         hero.moveRIGHT()
     
     hero.is_moving = True
