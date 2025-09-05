@@ -25,8 +25,8 @@ COLOR_MENU_BUTTON = (100, 100, 255)
 FRAME_CAT0 = 'cat'
 FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
-CAT_INICIAL_POSITION = 380, 380
-#CAT_INICIAL_POSITION = 540, 30 # for tests
+#CAT_INICIAL_POSITION = 380, 380
+CAT_INICIAL_POSITION = 540, 30 # for tests
 
 
 # SONS
@@ -47,14 +47,14 @@ def draw_game_over():
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
 
-def draw_win_screen():
+win_bg = Actor('winbackground')
+game_over_bg.pos = (WIDTH / 2, HEIGHT / 2)
 
-    screen.draw.text("YOU WIN!", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color="green")
-    
-    # Reutiliza os mesmos botões
+def draw_win_screen():
+    win_bg.draw()
+    screen.draw.text("YOU WIN!", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
     screen.draw.filled_rect(play_again_button, COLOR_MENU_BUTTON)
     screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
-    
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
 
@@ -227,7 +227,7 @@ def check_collisions():
 def on_mouse_down(pos, button):
 
     global STATE
-    if STATE == 'GAME_OVER':
+    if STATE == 'GAME_OVER' or STATE == 'WIN':
         if button == mouse.LEFT:
             if play_again_button.collidepoint(pos):
                 init_game() # Reinicia o jogo
@@ -317,6 +317,8 @@ def draw():
 
     if STATE == 'GAME_OVER':
         draw_game_over()
+    elif STATE == 'WIN':
+        draw_win_screen()
 
 
 def update(dt):
