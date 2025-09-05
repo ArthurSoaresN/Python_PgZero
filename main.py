@@ -106,13 +106,21 @@ class Car:
 
         if self.via == 2:
             self.actor.angle = 180
-        
+    
+    def setSpeed(self, new_speed):
+        self.speed = new_speed
+            
     def moving(self):
+        base_speed = 5
 
         if self.via == 2:
-            self.actor.x += 10 + self.speed
+            self.actor.x += base_speed + self.speed
+            if self.actor.left > WIDTH:
+                self.actor.right = 0
         else:
-            self.actor.x -= 10 - self.speed
+            self.actor.x -= (base_speed + self.speed)
+            if self.actor.right < 0:
+                self.actor.left = WIDTH
 
     def update(self):
         self.moving()
@@ -120,30 +128,16 @@ class Car:
     def draw(self):
         self.actor.draw()
 
-all_cars = []
-
 def create_cars():
-    all_cars.clear() 
 
-    # --- Carros indo para a DIREITA ---
-    # Pega a primeira posição da lista da direita
-    pos_y_1 = streets_right_direction[0][1] # Posição Y = 260
-    car1 = Car(-100, pos_y_1, 'right')
+    car1 = Car(1)
+    car2 = Car(2)
+    car3 = Car(3)
+
     all_cars.append(car1)
-
-    # Pega a terceira posição da lista da direita
-    pos_y_2 = streets_right_direction[2][1] # Posição Y = 100
-    car2 = Car(-100, pos_y_2, 'right')
-    # Adicionando um segundo carro na mesma faixa, mais atrás
-    car3 = Car(-400, pos_y_2, 'right')
     all_cars.append(car2)
     all_cars.append(car3)
 
-    # --- Carros indo para a ESQUERDA ---
-    # Pega a segunda posição da lista da esquerda
-    pos_y_3 = streets_left_direction[1][1] # Posição Y = 180
-    car4 = Car(900, pos_y_3, 'left')
-    all_cars.append(car4)
 
 def on_mouse_down(pos, button):
 
@@ -161,7 +155,10 @@ def on_mouse_down(pos, button):
         print("You missed me")
     """
 
+# Hero
 hero = Cat(380,380)
+# Villains
+create_cars()
 var0cg = hero
 
 def init_game():
@@ -184,6 +181,7 @@ def check_boundaries():
 
 def draw():
 
+    #  =========================== SCENARIO ===========================
     screen.draw.filled_rect(Rect(0, 0, WIDTH, TILE_SIZE), COLOR_SIDEWALK) # sidewalk from above
     screen.draw.filled_rect(Rect(0, HEIGHT - TILE_SIZE, WIDTH, TILE_SIZE), COLOR_SIDEWALK) # sidewalk from below
 
@@ -204,13 +202,23 @@ def draw():
             new_line_x = LINE_X + (i * 150)
             screen.draw.filled_rect(Rect(new_line_x, new_line_y, LINE_WIDTH, STREET_HEIGHT), COLOR_WHITE)
         j += 100
+    # =================================================================
 
     hero.draw()
+
+    for car in all_cars:
+        car.draw()
+
     screen.draw.text(f"Score: {score}   Fase: {fase}", (10, 10), fontsize=30, color=COLOR_WHITE)
 
-def update(dt):
-    hero.update(dt)
 
+def update(dt):
+
+    for car in all_cars:
+        car.update()
+
+    # === HERO MOVIE ===
+    hero.update(dt)
     moving_this_frame = False
 
     if keyboard.up or keyboard.w:
