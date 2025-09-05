@@ -27,6 +27,28 @@ FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
 CAT_INICIAL_POSITION = 380, 380
 
+# BOTOES
+
+play_again_button = Rect((WIDTH/2 - 100, HEIGHT/2), (200, 50))
+exit_button = Rect((WIDTH/2 - 100, HEIGHT/2 + 60), (200, 50))
+
+game_over_bg = Actor('gameoverbackground')
+game_over_bg.pos = (WIDTH / 2, HEIGHT / 2)
+game_over_bg.alpha = 0.7
+
+def draw_game_over():
+    game_over_bg.draw()
+    screen.draw.filled_rect(Rect(0, 0, WIDTH, HEIGHT), (0, 0, 0, 150))
+
+    screen.draw.text("GAME OVER", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
+
+    screen.draw.filled_rect(play_again_button, COLOR_MENU_BUTTON)
+    screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
+
+    # Desenha o botão "EXIT"
+    screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
+    screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
+
 # Musica
 
 # Classes
@@ -86,7 +108,7 @@ streets_left_direction = [(900, 280), (900, 200), (900, 120)]
 all_cars = []
 
 class Car:
-    def __init__(self, via: int):
+    def __init__(self, via: int, x_start: int = None):
 
         self.via = via
 
@@ -104,8 +126,9 @@ class Car:
         self.actor.pos = (self.x, self.y)
         self.speed = 0
 
-        if self.via == 2:
-            self.actor.angle = 180
+        if x_start != None and x_start > 1000:
+            self.actor.x = x_start
+            
     
     def setSpeed(self, new_speed):
         self.speed = new_speed
@@ -114,6 +137,7 @@ class Car:
         base_speed = 5
 
         if self.via == 2:
+            self.actor.angle = 180
             self.actor.x += base_speed + self.speed
             if self.actor.left > WIDTH:
                 self.actor.right = 0
@@ -130,18 +154,42 @@ class Car:
     def draw(self):
         self.actor.draw()
 
+MIN_CAR_DISTANCE = 200
+
 def create_cars():
+    all_cars.clear()
 
     car1 = Car(1)
     car2 = Car(2)
     car3 = Car(3)
+    car4 = Car(3, x_start=1300)
+    car5 = Car(1, x_start=2300)
 
-    all_cars.append(car1)
-    all_cars.append(car2)
-    all_cars.append(car3)
+    if fase == 1:
+        all_cars.append(car1)
+        all_cars.append(car2)
+        all_cars.append(car3)
+        all_cars.append(car4)
+        all_cars.append(car5)
 
+def check_collisions():
+    global STATE
+    for car in all_cars:
+        if hero.actor.colliderect(car.actor):
+            STATE = 'GAME_OVER'
+            sounds.crash.play()
 
 def on_mouse_down(pos, button):
+
+    global STATE
+    if STATE == 'GAME_OVER':
+        if button == mouse.LEFT:
+            if play_again_button.collidepoint(pos):
+                init_game() # Reinicia o jogo
+            
+            # Se o clique foi no botão "EXIT"
+            if exit_button.collidepoint(pos):
+                exit() # Fecha o jogo
 
     # Desempacota a tupla 'pos' em x e y
     x, y = pos
@@ -164,8 +212,11 @@ create_cars()
 var0cg = hero
 
 def init_game():
-    global hero, score, fase, STATE
+    global score, fase, STATE
     score = 0
+    fase = 1
+    hero.actor.pos = CAT_INICIAL_POSITION 
+    create_cars()
     STATE = 'PLAYING'
    
 def check_boundaries():
@@ -213,32 +264,39 @@ def draw():
 
     screen.draw.text(f"Score: {score}   Fase: {fase}", (10, 10), fontsize=30, color=COLOR_WHITE)
 
+    if STATE == 'GAME_OVER':
+        draw_game_over()
+
 
 def update(dt):
+    if STATE == 'PLAYING':
+        for car in all_cars:
+            car.update()
 
-    for car in all_cars:
-        car.update()
+        # === HERO MOVIE ===
+        hero.update(dt)
+        moving_this_frame = False
 
-    # === HERO MOVIE ===
-    hero.update(dt)
-    moving_this_frame = False
+        if keyboard.up or keyboard.w:
+            hero.moveUP()
+            moving_this_frame = True
+        
+        if keyboard.down or keyboard.s:
+            hero.moveDOWN()
+            moving_this_frame = True
+        
+        if keyboard.right or keyboard.d:
+            hero.moveRIGHT()
+            moving_this_frame = True
+        
+        if keyboard.left or keyboard.a:
+            hero.moveLEFT()
+            moving_this_frame = True
 
-    if keyboard.up or keyboard.w:
-        hero.moveUP()
-        moving_this_frame = True
+        hero.is_moving = moving_this_frame
+
+        # PHYSIC
+        check_boundaries()
+        check_collisions()
     
-    if keyboard.down or keyboard.s:
-        hero.moveDOWN()
-        moving_this_frame = True
-    
-    if keyboard.right or keyboard.d:
-        hero.moveRIGHT()
-        moving_this_frame = True
-    
-    if keyboard.left or keyboard.a:
-        hero.moveLEFT()
-        moving_this_frame = True
-
-    hero.is_moving = moving_this_frame
-
-    check_boundaries()
+init_game()
