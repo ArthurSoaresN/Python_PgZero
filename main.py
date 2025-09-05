@@ -34,17 +34,14 @@ CAT_INICIAL_POSITION = 380, 380
 TILE_SIZE_MOVE = 1
 
 class Cat:
-    def __init__(self, x , y):
+    def __init__(self, x:int , y: int):
         self.x = x
         self.y = y
         self.frame_timer = 0.0
         self.animation_speed = 0.2
         self.is_moving = False
         self.actor = Actor(FRAME_CAT0)
-        self.actor.pos = (self.x, self.y) # É mais simples atribuir a posição assim
-
-    # Removi os métodos move, getPosition e setPosition que não estavam sendo usados
-    # Se precisar deles depois, podemos adicioná-los novamente.
+        self.actor.pos = (self.x, self.y) 
     
     def moveUP(self):
         self.actor.y -= TILE_SIZE_MOVE
@@ -75,7 +72,7 @@ class Cat:
                 self.actor.image = FRAME_CAT1
             self.frame_timer = 0.0
             
-    def update(self, dt): # Apenas uma função update agora
+    def update(self, dt):
         self.animate(dt)
         if not self.is_moving:
             self.actor.image = FRAME_CAT0
@@ -83,9 +80,70 @@ class Cat:
     def draw(self):
         self.actor.draw()
 
+cars_imagens = ['car1', 'car2', 'car3', 'car4']
+streets_right_direction = [(-100, 260), (-100, 180), (-100, 100)]
+streets_left_direction = [(900, 260), (900, 180), (900, 100)]
+all_cars = []
 
 class Car:
-    pass
+    def __init__(self, via: int):
+
+        self.via = via
+
+        if self.via == 1: # LEFT
+            x, y = streets_left_direction[0]
+        elif self.via == 2: # RIGHT
+            x, y = streets_right_direction[1]
+        elif self.via == 3: # LEFT
+            x, y = streets_left_direction[2]
+
+        self.x = x
+        self.y = y
+        self.image = random.choice(cars_imagens)
+        self.actor = Actor(self.image)
+        self.actor.pos = (self.x, self.y)
+        self.speed = 0
+
+        if self.via == 2:
+            self.actor.angle = 180
+        
+    def moving(self):
+
+        if self.via == 2:
+            self.actor.x += 10 + self.speed
+        else:
+            self.actor.x -= 10 - self.speed
+
+    def update(self):
+        self.moving()
+    
+    def draw(self):
+        self.actor.draw()
+
+all_cars = []
+
+def create_cars():
+    all_cars.clear() 
+
+    # --- Carros indo para a DIREITA ---
+    # Pega a primeira posição da lista da direita
+    pos_y_1 = streets_right_direction[0][1] # Posição Y = 260
+    car1 = Car(-100, pos_y_1, 'right')
+    all_cars.append(car1)
+
+    # Pega a terceira posição da lista da direita
+    pos_y_2 = streets_right_direction[2][1] # Posição Y = 100
+    car2 = Car(-100, pos_y_2, 'right')
+    # Adicionando um segundo carro na mesma faixa, mais atrás
+    car3 = Car(-400, pos_y_2, 'right')
+    all_cars.append(car2)
+    all_cars.append(car3)
+
+    # --- Carros indo para a ESQUERDA ---
+    # Pega a segunda posição da lista da esquerda
+    pos_y_3 = streets_left_direction[1][1] # Posição Y = 180
+    car4 = Car(900, pos_y_3, 'left')
+    all_cars.append(car4)
 
 def on_mouse_down(pos, button):
 
@@ -112,26 +170,16 @@ def init_game():
     STATE = 'PLAYING'
    
 def check_boundaries():
-    # --- EIXO Y (VERTICAL) - Clamping ---
-    # Se a parte de cima do gato passar do topo da tela (y < 0)
     if hero.actor.top < 0:
-        # Trava a parte de cima do gato em 0
         hero.actor.top = 0
     
-    # Se a parte de baixo do gato passar da base da tela (y > HEIGHT)
     if hero.actor.bottom > HEIGHT:
-        # Trava a parte de baixo do gato no limite da altura
         hero.actor.bottom = HEIGHT
 
-    # --- EIXO X (HORIZONTAL) - Wrapping ---
-    # Se a parte direita do gato sumir pela esquerda da tela (x < 0)
     if hero.actor.right < 0:
-        # Move a parte esquerda do gato para a borda direita da tela
         hero.actor.left = WIDTH
     
-    # Se a parte esquerda do gato sumir pela direita da tela (x > WIDTH)
     if hero.actor.left > WIDTH:
-        # Move a parte direita do gato para a borda esquerda da tela
         hero.actor.right = 0
 
 def draw():
