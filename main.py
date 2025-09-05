@@ -81,8 +81,8 @@ class Cat:
         self.actor.draw()
 
 cars_imagens = ['car1', 'car2', 'car3', 'car4']
-streets_right_direction = [(-100, 260), (-100, 180), (-100, 100)]
-streets_left_direction = [(900, 260), (900, 180), (900, 100)]
+streets_right_direction = [(-100, 280), (-100, 200), (-100, 120)]
+streets_left_direction = [(900, 280), (900, 200), (900, 120)]
 all_cars = []
 
 class Car:
@@ -117,10 +117,12 @@ class Car:
             self.actor.x += base_speed + self.speed
             if self.actor.left > WIDTH:
                 self.actor.right = 0
+                self.actor.image = random.choice(cars_imagens)
         else:
             self.actor.x -= (base_speed + self.speed)
             if self.actor.right < 0:
                 self.actor.left = WIDTH
+                self.actor.image = random.choice(cars_imagens)
 
     def update(self):
         self.moving()
