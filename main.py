@@ -10,7 +10,7 @@ TILE_SIZE = 50
 
 STATE = 'MENU'
 score = 0
-fase = 1
+level = 1
 music_enable = True
 
 # CORES
@@ -26,9 +26,10 @@ FRAME_CAT0 = 'cat'
 FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
 CAT_INICIAL_POSITION = 380, 380
+#CAT_INICIAL_POSITION = 540, 30 # for tests
+
 
 # SONS
-    
 
 # BOTOES
 
@@ -43,6 +44,17 @@ def draw_game_over():
     screen.draw.text("GAME OVER", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
     screen.draw.filled_rect(play_again_button, COLOR_MENU_BUTTON)
     screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
+    screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
+    screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
+
+def draw_win_screen():
+
+    screen.draw.text("YOU WIN!", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color="green")
+    
+    # Reutiliza os mesmos botões
+    screen.draw.filled_rect(play_again_button, COLOR_MENU_BUTTON)
+    screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
+    
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
 
@@ -178,7 +190,7 @@ def create_cars():
     car4 = Car(3, x_start=1500)
     car5 = Car(1, x_start=600)
 
-    if fase == 1:
+    if level == 1:
         all_cars.append(car1)
         all_cars.append(car2)
         all_cars.append(car3)
@@ -186,13 +198,31 @@ def create_cars():
         all_cars.append(car5)
 
 def check_collisions():
-    global STATE
+    global STATE, score, level
     for car in all_cars:
         if hero.actor.colliderect(car.actor):
             STATE = 'GAME_OVER'
             sounds.crash.play()
             sounds.motor.stop()
             hero.setDirection('up')
+    
+    if hero.actor.colliderect(bone):
+        score += 10
+        level += 1
+        hero.actor.pos = CAT_INICIAL_POSITION
+
+        if level >= 4:
+            STATE = 'WIN'
+            sounds.motor.stop()
+            sounds.win.play()
+        else:
+            if level == 2:
+                new_speed_bonus = 1
+            if level == 3:
+                new_speed_bonus = 2
+            for car in all_cars:
+                    car.setSpeed(new_speed_bonus)
+
 
 def on_mouse_down(pos, button):
 
@@ -228,12 +258,12 @@ create_cars()
 var0cg = hero
 # BONE
 bone = Actor('bone')
-bone.pos = (380,20)
+bone.pos = (380,30)
 
 def init_game():
-    global score, fase, STATE
+    global score, level, STATE
     score = 0
-    fase = 1
+    level = 1
     hero.actor.pos = CAT_INICIAL_POSITION 
     create_cars()
     sounds.motor.play(-1) 
@@ -283,7 +313,7 @@ def draw():
     for car in all_cars:
         car.draw()
 
-    screen.draw.text(f"Score: {score}   Fase: {fase}", (10, 10), fontsize=30, color=COLOR_WHITE)
+    screen.draw.text(f"Score: {score}   Level: {level}", (10, 10), fontsize=30, color=COLOR_WHITE)
 
     if STATE == 'GAME_OVER':
         draw_game_over()
