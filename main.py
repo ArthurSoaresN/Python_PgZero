@@ -18,7 +18,7 @@ COLOR_WHITE = (255, 255, 255)
 COLOR_BLACK = (0, 0, 0)
 COLOR_ASPHALT = (60, 60, 60)
 COLOR_SIDEWALK = (180, 180, 180)
-COLOR_LANE_LINE = (255, 255, 255, 100) # Faixa de pedestres
+COLOR_LANE_LINE = (255, 255, 255, 100)
 COLOR_MENU_BUTTON = (100, 100, 255)
 
 # Sprite
@@ -27,6 +27,9 @@ FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
 CAT_INICIAL_POSITION = 380, 380
 
+# SONS
+    
+
 # BOTOES
 
 play_again_button = Rect((WIDTH/2 - 100, HEIGHT/2), (200, 50))
@@ -34,22 +37,14 @@ exit_button = Rect((WIDTH/2 - 100, HEIGHT/2 + 60), (200, 50))
 
 game_over_bg = Actor('gameoverbackground')
 game_over_bg.pos = (WIDTH / 2, HEIGHT / 2)
-game_over_bg.alpha = 0.7
 
 def draw_game_over():
     game_over_bg.draw()
-    screen.draw.filled_rect(Rect(0, 0, WIDTH, HEIGHT), (0, 0, 0, 150))
-
     screen.draw.text("GAME OVER", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
-
     screen.draw.filled_rect(play_again_button, COLOR_MENU_BUTTON)
     screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
-
-    # Desenha o botão "EXIT"
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
-
-# Musica
 
 # Classes
 
@@ -63,23 +58,31 @@ class Cat:
         self.animation_speed = 0.2
         self.is_moving = False
         self.actor = Actor(FRAME_CAT0)
-        self.actor.pos = (self.x, self.y) 
+        self.actor.pos = (self.x, self.y)
+        self.direction = 'up'
+
+    def setDirection(self, new_direction: str):
+        self.direction = new_direction
     
     def moveUP(self):
         self.actor.y -= TILE_SIZE_MOVE
         self.actor.angle = 0
+        self.direction = 'up'
         
     def moveDOWN(self):
         self.actor.y += TILE_SIZE_MOVE
         self.actor.angle = 180
+        self.direction = 'down'
     
     def moveRIGHT(self):
         self.actor.x += TILE_SIZE_MOVE
         self.actor.angle = 270
+        self.direction = 'right'
 
     def moveLEFT(self):
         self.actor.x -= TILE_SIZE_MOVE
         self.actor.angle = 90
+        self.direction = 'left'
 
     def animate(self, dt):
         if not self.is_moving:
@@ -95,16 +98,26 @@ class Cat:
             self.frame_timer = 0.0
             
     def update(self, dt):
-        self.animate(dt)
-        if not self.is_moving:
+        if self.is_moving:
+            self.animate(dt)
+        else:
             self.actor.image = FRAME_CAT0
+            if self.direction == 'up':
+                self.actor.angle = 0
+            elif self.direction == 'down':
+                self.actor.angle = 180
+            elif self.direction == 'right':
+                self.actor.angle = 270
+            elif self.direction == 'left':
+                self.actor.angle = 90
+
     
     def draw(self):
         self.actor.draw()
 
 cars_imagens = ['car1', 'car2', 'car3', 'car4']
-streets_right_direction = [(-100, 280), (-100, 200), (-100, 120)]
-streets_left_direction = [(900, 280), (900, 200), (900, 120)]
+streets_right_direction = [(-100, 290), (-100, 210), (-100, 130)]
+streets_left_direction = [(900, 295), (900, 210), (900, 125)]
 all_cars = []
 
 class Car:
@@ -162,8 +175,8 @@ def create_cars():
     car1 = Car(1)
     car2 = Car(2)
     car3 = Car(3)
-    car4 = Car(3, x_start=1300)
-    car5 = Car(1, x_start=2300)
+    car4 = Car(3, x_start=1500)
+    car5 = Car(1, x_start=600)
 
     if fase == 1:
         all_cars.append(car1)
@@ -178,6 +191,8 @@ def check_collisions():
         if hero.actor.colliderect(car.actor):
             STATE = 'GAME_OVER'
             sounds.crash.play()
+            sounds.motor.stop()
+            hero.setDirection('up')
 
 def on_mouse_down(pos, button):
 
@@ -189,6 +204,7 @@ def on_mouse_down(pos, button):
             
             # Se o clique foi no botão "EXIT"
             if exit_button.collidepoint(pos):
+                sounds.motor.stop()
                 exit() # Fecha o jogo
 
     # Desempacota a tupla 'pos' em x e y
@@ -210,6 +226,9 @@ hero = Cat(380,380)
 # Villains
 create_cars()
 var0cg = hero
+# BONE
+bone = Actor('bone')
+bone.pos = (380,20)
 
 def init_game():
     global score, fase, STATE
@@ -217,6 +236,7 @@ def init_game():
     fase = 1
     hero.actor.pos = CAT_INICIAL_POSITION 
     create_cars()
+    sounds.motor.play(-1) 
     STATE = 'PLAYING'
    
 def check_boundaries():
@@ -238,7 +258,7 @@ def draw():
     screen.draw.filled_rect(Rect(0, 0, WIDTH, TILE_SIZE), COLOR_SIDEWALK) # sidewalk from above
     screen.draw.filled_rect(Rect(0, HEIGHT - TILE_SIZE, WIDTH, TILE_SIZE), COLOR_SIDEWALK) # sidewalk from below
 
-    STREET_HEIGHT = 300 # altura da via
+    STREET_HEIGHT = 310 # altura da via
     STREET_WIDTH = 800 # largura da via
     STREET_Y = 50
     STREET_X = 0
@@ -250,13 +270,14 @@ def draw():
     STREET_HEIGHT = 5 # altura faixa
 
     for j in range(4):
-        new_line_y = LINE_Y * j + TILE_SIZE + 30
+        new_line_y = LINE_Y * j + TILE_SIZE + 35
         for i in range(6):
             new_line_x = LINE_X + (i * 150)
             screen.draw.filled_rect(Rect(new_line_x, new_line_y, LINE_WIDTH, STREET_HEIGHT), COLOR_WHITE)
         j += 100
     # =================================================================
 
+    bone.draw()
     hero.draw()
 
     for car in all_cars:
