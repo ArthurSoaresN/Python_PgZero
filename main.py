@@ -31,7 +31,7 @@ CAT_INICIAL_POSITION = 380, 380
 
 # Classes
 
-TILE_SIZE_MOVE = TILE_SIZE/10
+TILE_SIZE_MOVE = 1
 
 class Cat:
     def __init__(self, x , y):
@@ -41,46 +41,31 @@ class Cat:
         self.animation_speed = 0.2
         self.is_moving = False
         self.actor = Actor(FRAME_CAT0)
-        self.actor.x = self.x
-        self.actor.y = self.y
+        self.actor.pos = (self.x, self.y) # É mais simples atribuir a posição assim
 
-    def move(self, dx, dy):
-        self.actor.x += dx * TILE_SIZE_MOVE
-        self.actor.y += dy * TILE_SIZE_MOVE
-
-    def getPosition(self):
-        x1, y1 = self.actor.pos
-        position = [x1, y1]
-        return position
+    # Removi os métodos move, getPosition e setPosition que não estavam sendo usados
+    # Se precisar deles depois, podemos adicioná-los novamente.
     
-    def setPosition(self, set_x, set_y):
-        self.actor.x = set_x
-        self.actor.y = set_y
-
     def moveUP(self):
-        self.actor.x = self.actor.x
         self.actor.y -= TILE_SIZE_MOVE
+        self.actor.angle = 0
         
     def moveDOWN(self):
-        self.actor.x = self.actor.x
         self.actor.y += TILE_SIZE_MOVE
+        self.actor.angle = 180
     
     def moveRIGHT(self):
-        self.actor.y = self.actor.y
         self.actor.x += TILE_SIZE_MOVE
+        self.actor.angle = 270
 
     def moveLEFT(self):
-        self.actor.y = self.actor.y
         self.actor.x -= TILE_SIZE_MOVE
+        self.actor.angle = 90
 
-    def update(self, dt):
-        self.animate(dt)
-        if not self.is_moving:
-            self.actor.image = FRAME_CAT0
-    
     def animate(self, dt):
         if not self.is_moving:
             return
+        
         self.frame_timer += dt
         
         if self.frame_timer >= self.animation_speed:
@@ -89,8 +74,8 @@ class Cat:
             else:
                 self.actor.image = FRAME_CAT1
             self.frame_timer = 0.0
-        
-    def update(self, dt):
+            
+    def update(self, dt): # Apenas uma função update agora
         self.animate(dt)
         if not self.is_moving:
             self.actor.image = FRAME_CAT0
@@ -126,6 +111,28 @@ def init_game():
     score = 0
     STATE = 'PLAYING'
    
+def check_boundaries():
+    # --- EIXO Y (VERTICAL) - Clamping ---
+    # Se a parte de cima do gato passar do topo da tela (y < 0)
+    if hero.actor.top < 0:
+        # Trava a parte de cima do gato em 0
+        hero.actor.top = 0
+    
+    # Se a parte de baixo do gato passar da base da tela (y > HEIGHT)
+    if hero.actor.bottom > HEIGHT:
+        # Trava a parte de baixo do gato no limite da altura
+        hero.actor.bottom = HEIGHT
+
+    # --- EIXO X (HORIZONTAL) - Wrapping ---
+    # Se a parte direita do gato sumir pela esquerda da tela (x < 0)
+    if hero.actor.right < 0:
+        # Move a parte esquerda do gato para a borda direita da tela
+        hero.actor.left = WIDTH
+    
+    # Se a parte esquerda do gato sumir pela direita da tela (x > WIDTH)
+    if hero.actor.left > WIDTH:
+        # Move a parte direita do gato para a borda esquerda da tela
+        hero.actor.right = 0
 
 def draw():
 
@@ -156,22 +163,24 @@ def draw():
 def update(dt):
     hero.update(dt)
 
+    moving_this_frame = False
+
     if keyboard.up or keyboard.w:
         hero.moveUP()
-        hero.is_moving = True
-        hero.update(dt)
+        moving_this_frame = True
+    
     if keyboard.down or keyboard.s:
         hero.moveDOWN()
-        hero.is_moving = True
-        hero.update(dt)
+        moving_this_frame = True
+    
     if keyboard.right or keyboard.d:
         hero.moveRIGHT()
-        hero.is_moving = True
-        hero.update(dt)
+        moving_this_frame = True
+    
     if keyboard.left or keyboard.a:
         hero.moveLEFT()
-        hero.is_moving = True
-        hero.update(dt)
-    else:
-        hero.is_moving = False
-        hero.update(dt)
+        moving_this_frame = True
+
+    hero.is_moving = moving_this_frame
+
+    check_boundaries()
