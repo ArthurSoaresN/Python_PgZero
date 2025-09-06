@@ -29,12 +29,12 @@ FRAME_CAT2 = 'cat_walk2'
 CAT_INICIAL_POSITION = 540, 30 # for tests
 
 
-# SONS
-
 # BOTOES
 
 play_again_button = Rect((WIDTH/2 - 100, HEIGHT/2), (200, 50))
 exit_button = Rect((WIDTH/2 - 100, HEIGHT/2 + 60), (200, 50))
+play = Rect((WIDTH/2 - 100, HEIGHT/2), (200, 50))
+back_menu_button = Rect((WIDTH/2 - 100, HEIGHT/2 + 120), (200, 50))
 
 game_over_bg = Actor('gameoverbackground')
 game_over_bg.pos = (WIDTH / 2, HEIGHT / 2)
@@ -46,9 +46,11 @@ def draw_game_over():
     screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
+    screen.draw.filled_rect(back_menu_button, COLOR_MENU_BUTTON)
+    screen.draw.text("BACK TO MENU", center=back_menu_button.center, fontsize=30, color=COLOR_WHITE)
 
 win_bg = Actor('winbackground')
-game_over_bg.pos = (WIDTH / 2, HEIGHT / 2)
+win_bg.pos = pos = (WIDTH / 2, HEIGHT / 2)
 
 def draw_win_screen():
     win_bg.draw()
@@ -57,6 +59,25 @@ def draw_win_screen():
     screen.draw.text("PLAY AGAIN", center=play_again_button.center, fontsize=30, color=COLOR_WHITE)
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
+    screen.draw.filled_rect(back_menu_button, COLOR_MENU_BUTTON)
+    screen.draw.text("BACK TO MENU", center=back_menu_button.center, fontsize=30, color=COLOR_WHITE)
+
+menu_bg = Actor('menubackground')
+menu_bg.pos = (WIDTH / 2, HEIGHT / 2)
+volume_option_button = Actor('volume1')
+volume_images = ['volume0','volume1']
+
+def draw_menu_screen():
+    menu_bg.draw()
+    volume_option_button.draw()
+    volume_option_button.pos = 700, 50
+
+    screen.draw.text("CAT AND BONE", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
+    screen.draw.filled_rect(play, COLOR_MENU_BUTTON)
+    screen.draw.text("PLAY", center=play.center, fontsize=30, color=COLOR_WHITE)
+    screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
+    screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
+
 
 # Classes
 
@@ -184,26 +205,40 @@ MIN_CAR_DISTANCE = 200
 def create_cars():
     all_cars.clear()
 
-    car1 = Car(1)
-    car2 = Car(2)
-    car3 = Car(3)
-    car4 = Car(3, x_start=1500)
-    car5 = Car(1, x_start=600)
+    patern = random.randint(1,3)
 
-    if level == 1:
-        all_cars.append(car1)
-        all_cars.append(car2)
-        all_cars.append(car3)
-        all_cars.append(car4)
-        all_cars.append(car5)
+    if patern == 1:
+        car1 = Car(1)
+        car2 = Car(2)
+        car3 = Car(3)
+        car4 = Car(3, x_start=1500)
+        car5 = Car(1, x_start=600)
+        all_cars.extend([car1, car2, car3, car4, car5])
+    elif patern == 2:
+        car1 = Car(2)
+        car2 = Car(1, x_start=1400)
+        car3 = Car(3)
+        car4 = Car(2, x_start=400)
+        car5 = Car(3, x_start=1500)
+        car2.setSpeed(3)
+        all_cars.extend([car1, car2, car3, car4])
+    else:
+        car1 = Car(1)
+        car2 = Car(1, x_start=1300)
+        car3 = Car(1, x_start=700)
+        car4 = Car(2)
+        car5 = Car(3)
+        car5.setSpeed(2)
+        all_cars.extend([car1, car2, car3, car4, car5])
 
 def check_collisions():
     global STATE, score, level
     for car in all_cars:
         if hero.actor.colliderect(car.actor):
             STATE = 'GAME_OVER'
-            sounds.crash.play()
-            sounds.motor.stop()
+            if music_enable:
+                sounds.crash.play()
+                sounds.motor.stop()
             hero.setDirection('up')
     
     if hero.actor.colliderect(bone):
@@ -213,29 +248,49 @@ def check_collisions():
 
         if level >= 4:
             STATE = 'WIN'
-            sounds.motor.stop()
-            sounds.win.play()
+            if music_enable:
+                sounds.motor.stop()
+                sounds.win.play()
         else:
-            if level == 2:
-                new_speed_bonus = 1
-            if level == 3:
-                new_speed_bonus = 2
+            new_speed_bonus = level - 1 
             for car in all_cars:
                     car.setSpeed(new_speed_bonus)
 
 
 def on_mouse_down(pos, button):
 
-    global STATE
-    if STATE == 'GAME_OVER' or STATE == 'WIN':
-        if button == mouse.LEFT:
-            if play_again_button.collidepoint(pos):
+    global STATE, music_enable
+
+    if STATE == 'MENU':
+        
+        if play.collidepoint(pos):
+                init_game()
+
+        if exit_button.collidepoint(pos):
+                exit()
+
+        if volume_option_button.collidepoint(pos):
+            music_enable = not music_enable
+            if music_enable:
+                volume_option_button.image = volume_images[1]
+            else:
+                volume_option_button.image = volume_images[0]
+
+    elif STATE == 'GAME_OVER' or STATE == 'WIN':
+        if play_again_button.collidepoint(pos):
                 init_game() # Reinicia o jogo
             
-            # Se o clique foi no botão "EXIT"
-            if exit_button.collidepoint(pos):
+        if exit_button.collidepoint(pos):
+            if music_enable:
                 sounds.motor.stop()
-                exit() # Fecha o jogo
+                sounds.win.stop
+            exit() # Fecha o jogo
+
+        if back_menu_button.collidepoint(pos):
+            if music_enable:
+                sounds.motor.stop()
+                sounds.win.stop()
+            STATE = 'MENU'
 
     # Desempacota a tupla 'pos' em x e y
     x, y = pos
@@ -266,7 +321,8 @@ def init_game():
     level = 1
     hero.actor.pos = CAT_INICIAL_POSITION 
     create_cars()
-    sounds.motor.play(-1) 
+    if music_enable:
+        sounds.motor.play(-1) 
     STATE = 'PLAYING'
    
 def check_boundaries():
@@ -305,6 +361,10 @@ def draw():
             new_line_x = LINE_X + (i * 150)
             screen.draw.filled_rect(Rect(new_line_x, new_line_y, LINE_WIDTH, STREET_HEIGHT), COLOR_WHITE)
         j += 100
+
+    screen.draw.filled_rect(Rect(0,85,800,5), COLOR_WHITE)
+    screen.draw.filled_rect(Rect(0,325,800,5), COLOR_WHITE)
+
     # =================================================================
 
     bone.draw()
@@ -319,6 +379,8 @@ def draw():
         draw_game_over()
     elif STATE == 'WIN':
         draw_win_screen()
+    elif STATE == 'MENU':
+        draw_menu_screen()
 
 
 def update(dt):
@@ -351,5 +413,3 @@ def update(dt):
         # PHYSIC
         check_boundaries()
         check_collisions()
-    
-init_game()
