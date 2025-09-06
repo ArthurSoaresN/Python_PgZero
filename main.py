@@ -25,8 +25,8 @@ COLOR_MENU_BUTTON = (100, 100, 255)
 FRAME_CAT0 = 'cat'
 FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
-#CAT_INICIAL_POSITION = 380, 380
-CAT_INICIAL_POSITION = 540, 30 # for tests
+CAT_INICIAL_POSITION = 380, 380
+# CAT_INICIAL_POSITION = 540, 30 # for tests
 
 
 # BOTOES
@@ -72,7 +72,7 @@ def draw_menu_screen():
     volume_option_button.draw()
     volume_option_button.pos = 700, 50
 
-    screen.draw.text("CAT AND BONE", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
+    screen.draw.text("CAT AND RAT", center=(WIDTH/2, HEIGHT/2 - 100), fontsize=60, color=COLOR_WHITE)
     screen.draw.filled_rect(play, COLOR_MENU_BUTTON)
     screen.draw.text("PLAY", center=play.center, fontsize=30, color=COLOR_WHITE)
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
@@ -220,7 +220,7 @@ def create_cars():
         car3 = Car(3)
         car4 = Car(2, x_start=400)
         car5 = Car(3, x_start=1500)
-        car2.setSpeed(3)
+        car2.setSpeed(2)
         all_cars.extend([car1, car2, car3, car4])
     else:
         car1 = Car(1)
@@ -241,7 +241,7 @@ def check_collisions():
                 sounds.motor.stop()
             hero.setDirection('up')
     
-    if hero.actor.colliderect(bone):
+    if hero.actor.colliderect(rat):
         score += 10
         level += 1
         hero.actor.pos = CAT_INICIAL_POSITION
@@ -311,9 +311,9 @@ hero = Cat(380,380)
 # Villains
 create_cars()
 var0cg = hero
-# BONE
-bone = Actor('bone')
-bone.pos = (380,30)
+# RAT
+rat = Actor('rat')
+rat.pos = (380,30)
 
 def init_game():
     global score, level, STATE
@@ -367,7 +367,7 @@ def draw():
 
     # =================================================================
 
-    bone.draw()
+    rat.draw()
     hero.draw()
 
     for car in all_cars:
