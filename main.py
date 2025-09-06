@@ -290,7 +290,6 @@ def on_mouse_down(pos, button):
                 sounds.win.stop()
             STATE = 'MENU'
 
-
     '''
     # FUNÇÃO AUXILIAR
     x, y = pos
