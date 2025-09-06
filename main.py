@@ -1,4 +1,3 @@
-import math
 import random
 
 # Largura
@@ -26,7 +25,7 @@ FRAME_CAT0 = 'cat'
 FRAME_CAT1 = 'cat_walk1'
 FRAME_CAT2 = 'cat_walk2' 
 CAT_INICIAL_POSITION = 380, 380
-# CAT_INICIAL_POSITION = 540, 30 # for tests
+#CAT_INICIAL_POSITION = 540, 30 # for tests
 
 
 # BOTOES
@@ -224,7 +223,7 @@ def create_cars():
     else:
         car1 = Car(1)
         car2 = Car(1, x_start=1300)
-        car3 = Car(1, x_start=700)
+        car3 = Car(1, x_start=1000)
         car4 = Car(2)
         car5 = Car(3)
         car5.setSpeed(2)
@@ -375,7 +374,10 @@ sidewalk_above = Actor('sidewalk')
 sidewalk_below = Actor('sidewalk')
 sidewalk_above.topleft = 0, 0
 sidewalk_below.topleft = 0, HEIGHT - TILE_SIZE
-
+three = Actor('three')
+three.pos = 80, 360
+hydrant = Actor('hydrant')
+hydrant.pos = 690,25
 
 def draw():
 
@@ -409,6 +411,9 @@ def draw():
 
     rat.draw()
     hero.draw()
+    three.draw()
+    hydrant.draw()
+  
 
     for car in all_cars:
         car.draw()
