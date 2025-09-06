@@ -25,7 +25,7 @@ FRAME_CAT0 = "cat"
 FRAME_CAT1 = "cat_walk1"
 FRAME_CAT2 = "cat_walk2"
 CAT_INICIAL_POSITION = 380, 380
-# CAT_INICIAL_POSITION = 540, 30 # for tests
+#CAT_INICIAL_POSITION = 540, 30 # for tests
 
 
 # BOTOES
@@ -101,6 +101,11 @@ def draw_menu_screen():
     screen.draw.filled_rect(exit_button, COLOR_MENU_BUTTON)
     screen.draw.text("EXIT", center=exit_button.center, fontsize=30, color=COLOR_WHITE)
 
+def start_menu_music():
+    music.stop()
+    if music_enable:
+        music.set_volume(0.5)
+        music.play('musicmenu')
 
 # Classes
 
@@ -291,17 +296,21 @@ def on_mouse_down(pos, button):
     if STATE == "MENU":
 
         if play.collidepoint(pos):
+            music.stop()
             init_game()
 
         if exit_button.collidepoint(pos):
+            music.stop()
             exit()
 
         if volume_option_button.collidepoint(pos):
             music_enable = not music_enable
             if music_enable:
                 volume_option_button.image = volume_images[1]
+                music.unpause()
             else:
                 volume_option_button.image = volume_images[0]
+                music.pause()
 
     elif STATE == "GAME_OVER" or STATE == "WIN":
         if play_again_button.collidepoint(pos):
@@ -318,6 +327,7 @@ def on_mouse_down(pos, button):
                 sounds.motor.stop()
                 sounds.win.stop()
             STATE = "MENU"
+            start_menu_music()
 
     """
     # FUNÇÃO AUXILIAR
@@ -497,3 +507,5 @@ def update(dt):
         # PHYSIC
         check_boundaries()
         check_collisions()
+
+start_menu_music()
