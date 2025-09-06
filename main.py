@@ -325,13 +325,13 @@ def on_mouse_down(pos, button):
     # Imprime os valores de x e y
     print(f"Clique em X: {x}, Y: {y}")
     """
-
-    if button == mouse.LEFT and hero.actor.collidepoint(pos):
-        print("aw")
-        if music_enable:
-            sounds.catcrash.play()
-    else:
-        print("You missed me")
+    if STATE == 'PLAYING':
+        if button == mouse.LEFT and hero.actor.collidepoint(pos):
+            print("aw")
+            if music_enable:
+                sounds.catcrash.play()
+        else:
+            print("You missed me")
 
 
 # Hero
