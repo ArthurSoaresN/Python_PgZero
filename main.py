@@ -274,6 +274,8 @@ def check_collisions():
             hero.setDirection("up")
 
     if hero.actor.colliderect(rat):
+        if music_enable:
+            sounds.getin.play()
         score += 10
         level += 1
         hero.actor.pos = CAT_INICIAL_POSITION
@@ -307,7 +309,7 @@ def on_mouse_down(pos, button):
             music_enable = not music_enable
             if music_enable:
                 volume_option_button.image = volume_images[1]
-                music.unpause()
+                start_menu_music()
             else:
                 volume_option_button.image = volume_images[0]
                 music.pause()
