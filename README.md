@@ -36,7 +36,7 @@ Para rodar este jogo em sua máquina local, siga os passos abaixo:
     python -m pgzero main.py
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/f2a0f891-bc13-4620-89c7-cc4f60dbbc6b" width="0px" />
+<img src="https://github.com/user-attachments/assets/f2a0f891-bc13-4620-89c7-cc4f60dbbc6b" width="300px" />
 </div>
 
 
