@@ -30,7 +30,6 @@ CAT_INICIAL_POSITION = 380, 380
 
 
 # BOTOES
-
 play_again_button = Rect((WIDTH/2 - 100, HEIGHT/2), (200, 50))
 exit_button = Rect((WIDTH/2 - 100, HEIGHT/2 + 60), (200, 50))
 play = Rect((WIDTH/2 - 100, HEIGHT/2), (200, 50))
@@ -292,19 +291,20 @@ def on_mouse_down(pos, button):
                 sounds.win.stop()
             STATE = 'MENU'
 
-    # Desempacota a tupla 'pos' em x e y
+
+
+    # FUNÇÃO AUXILIAR
     x, y = pos
-    
     # Imprime os valores de x e y
     print(f"Clique em X: {x}, Y: {y}")
 
-    """
-    if button == mouse.LEFT and cat.collidepoint(pos):
+    if button == mouse.LEFT and hero.actor.collidepoint(pos):
         print("aw")
-        sounds.catcrash.play()
+        if music_enable:
+            sounds.catcrash.play()
     else:
         print("You missed me")
-    """
+
 
 # Hero
 hero = Cat(380,380)
@@ -312,8 +312,38 @@ hero = Cat(380,380)
 create_cars()
 var0cg = hero
 # RAT
-rat = Actor('rat')
+RAT_FRAMES_LEFT = ['rat', 'rat1']
+RAT_FRAMES_RIGHT = ['rat_right', 'rat1_right']
+rat = Actor(RAT_FRAMES_LEFT[0])
 rat.pos = (380,30)
+rat_speed_x = 1 
+rat_frame_timer = 0.0
+RAT_ANIMATION_SPEED = 0.08
+RAT_RIGHT_LIMIT = 460
+RAT_LEFT_LIMIT = 300
+
+def update_rat(dt):
+    global rat_speed_x, rat_frame_timer
+
+    rat.x += rat_speed_x
+
+    if rat.right > RAT_RIGHT_LIMIT or rat.left < RAT_LEFT_LIMIT:
+        rat_speed_x *= -1
+
+    active_frames = []
+    if rat_speed_x > 0:
+        active_frames = RAT_FRAMES_RIGHT
+    else: 
+        active_frames = RAT_FRAMES_LEFT
+
+    rat_frame_timer += dt 
+    if rat_frame_timer >= RAT_ANIMATION_SPEED:
+        if rat.image == active_frames[0]:
+            rat.image = active_frames[1]
+        else:
+            rat.image = active_frames[0]
+        
+        rat_frame_timer = 0.0
 
 def init_game():
     global score, level, STATE
@@ -338,12 +368,21 @@ def check_boundaries():
     if hero.actor.left > WIDTH:
         hero.actor.right = 0
 
+
+cover = Actor('cover')
+cover.pos = 160, 125
+sidewalk_above = Actor('sidewalk')
+sidewalk_below = Actor('sidewalk')
+sidewalk_above.topleft = 0, 0
+sidewalk_below.topleft = 0, HEIGHT - TILE_SIZE
+
+
 def draw():
 
     #  =========================== SCENARIO ===========================
-    screen.draw.filled_rect(Rect(0, 0, WIDTH, TILE_SIZE), COLOR_SIDEWALK) # sidewalk from above
-    screen.draw.filled_rect(Rect(0, HEIGHT - TILE_SIZE, WIDTH, TILE_SIZE), COLOR_SIDEWALK) # sidewalk from below
 
+    sidewalk_above.draw()
+    sidewalk_below.draw()
     STREET_HEIGHT = 310 # altura da via
     STREET_WIDTH = 800 # largura da via
     STREET_Y = 50
@@ -362,6 +401,7 @@ def draw():
             screen.draw.filled_rect(Rect(new_line_x, new_line_y, LINE_WIDTH, STREET_HEIGHT), COLOR_WHITE)
         j += 100
 
+    cover.draw()
     screen.draw.filled_rect(Rect(0,85,800,5), COLOR_WHITE)
     screen.draw.filled_rect(Rect(0,325,800,5), COLOR_WHITE)
 
@@ -385,6 +425,7 @@ def draw():
 
 def update(dt):
     if STATE == 'PLAYING':
+        update_rat(dt)
         for car in all_cars:
             car.update()
 
