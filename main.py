@@ -472,7 +472,7 @@ def update(dt):
         for car in all_cars:
             car.update()
 
-        # === HERO MOVIE ===
+        # === HERO MOVE ===
         hero.update(dt)
         moving_this_frame = False
 
